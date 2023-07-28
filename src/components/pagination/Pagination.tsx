@@ -41,7 +41,11 @@ export default function Pagination({ queryConfig, page_size }: Props) {
       .fill(0)
       .map((_, index) => {
         const pageNumber = index + 1
-        if (page <= RANGE * 2 + 1 && pageNumber > page + RANGE && pageNumber < page_size - RANGE + 1) {
+        if (
+          page <= RANGE * 2 + 1 &&
+          pageNumber > page + RANGE &&
+          pageNumber < page_size - RANGE + 1
+        ) {
           return renderDotafter(index)
         } else if (page > RANGE * 2 + 1 && page < page_size - RANGE * 2) {
           if (pageNumber > RANGE && pageNumber < page - RANGE) {
@@ -49,7 +53,11 @@ export default function Pagination({ queryConfig, page_size }: Props) {
           } else if (pageNumber > page + RANGE && pageNumber < page_size - RANGE + 1) {
             return renderDotafter(index)
           }
-        } else if (page >= page_size - RANGE * 2 && pageNumber > RANGE && pageNumber < page - RANGE) {
+        } else if (
+          page >= page_size - RANGE * 2 &&
+          pageNumber > RANGE &&
+          pageNumber < page - RANGE
+        ) {
           return renderDotBefore(index)
         }
 
@@ -62,10 +70,13 @@ export default function Pagination({ queryConfig, page_size }: Props) {
                 page: pageNumber.toString()
               }).toString()
             }}
-            className={classNames('rounded mx-2 flex h-8 w-10 cursor-pointer items-center justify-center', {
-              'bg-oranges text-white': pageNumber === page,
-              'border-transparent': pageNumber !== page
-            })}
+            className={classNames(
+              'rounded mx-2 flex h-8 w-10 cursor-pointer items-center justify-center',
+              {
+                'bg-oranges text-white': pageNumber === page,
+                'border-transparent': pageNumber !== page
+              }
+            )}
             key={index}
           >
             {pageNumber}

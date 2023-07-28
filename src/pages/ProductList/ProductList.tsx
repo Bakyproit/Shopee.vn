@@ -46,7 +46,7 @@ export default function ProductList() {
       return CategoryApi.getCategories()
     }
   })
-  console.log(categoriesData?.data.data)
+  // console.log(categoriesData?.data.data)
 
   return (
     <div className='bg-gray-200 py-6'>

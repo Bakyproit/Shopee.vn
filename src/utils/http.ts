@@ -51,7 +51,7 @@ class Http {
           const message = response.data.message
           toast.success(message, {
             position: 'top-right',
-            autoClose: 500,
+            autoClose: 1000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
