@@ -30,13 +30,13 @@ export const schema = yup
     price_min: yup.string().test({
       name: 'price-not-allowed',
       message: 'Gía không phù hợp',
-      test:testPriceMinMax
-    }),
+      test: testPriceMinMax
+    }).required(),
     price_max: yup.string().test({
       name: 'price-not-allowed',
       message: 'Gía không phù hợp',
       test: testPriceMinMax
-    })
+    }).required()
   })
   .required()
 
