@@ -8,6 +8,7 @@ import Profile from './pages/Profile'
 import { useContext } from 'react'
 import { AppContext } from './contexts/app.context'
 import path from './contants/path'
+import ProductDetail from './pages/ProductDetail'
 
 // chua login
 function ProtectedRoute() {
@@ -21,6 +22,14 @@ function RejectedRoute() {
 }
 export default function useRouteElements() {
   const routeElements = useRoutes([
+    {
+      path: path.productDetail,
+      element: (
+        <MainLayout>
+          <ProductDetail />
+        </MainLayout>
+      )
+    },
     {
       path: path.home,
       index: true,

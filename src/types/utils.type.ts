@@ -12,7 +12,3 @@ export interface SuccessResponse<Data> {
 export type NoUnderfineField<T> = {
   [P in keyof T]-?: NoUnderfineField<NonNullable<T[P]>>
 }
-
-export type Require<T, K extends keyof T> = T & {
-  [P in K]-?: T[P]
-}

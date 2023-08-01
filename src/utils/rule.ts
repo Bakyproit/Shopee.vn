@@ -27,16 +27,22 @@ export const schema = yup
       .min(6, 'Độ dài từ 6-160 ký tự')
       .max(160, 'Độ dài từ 6-160 ký tự')
       .oneOf([yup.ref('password')], 'Nhập lại password không khớp'),
-    price_min: yup.string().test({
-      name: 'price-not-allowed',
-      message: 'Gía không phù hợp',
-      test: testPriceMinMax
-    }).required(),
-    price_max: yup.string().test({
-      name: 'price-not-allowed',
-      message: 'Gía không phù hợp',
-      test: testPriceMinMax
-    }).required()
+    price_min: yup
+      .string()
+      .test({
+        name: 'price-not-allowed',
+        message: 'Gía không phù hợp',
+        test: testPriceMinMax
+      })
+      .required(),
+    price_max: yup
+      .string()
+      .test({
+        name: 'price-not-allowed',
+        message: 'Gía không phù hợp',
+        test: testPriceMinMax
+      })
+      .required()
   })
   .required()
 
