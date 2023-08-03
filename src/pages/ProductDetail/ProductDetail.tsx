@@ -301,7 +301,7 @@ export default function ProductDetail() {
                   </svg>
                   Thêm vào giở hàng
                 </button>
-                <button className='ml-4 h-12 min-w-[5rem] items-center justify-center rounded-sm bg-oranges px-5 bg-oranges capitalize text-white shadow-sm outline-none hover:bg-oranges/90'>
+                <button className='ml-4 h-12 min-w-[5rem] items-center justify-center rounded-sm px-5 bg-oranges capitalize text-white shadow-sm outline-none hover:bg-oranges/90'>
                   Mua ngay
                 </button>
               </div>
