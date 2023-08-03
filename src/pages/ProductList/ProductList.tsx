@@ -1,53 +1,33 @@
 import { useQuery } from 'react-query'
+import CategoryApi from 'src/apis/category.api'
+import productApi from 'src/apis/product.api'
+import Pagination from 'src/components/pagination'
+import useQueryConfig from 'src/hooks/useQueryConfig'
+import { ProductListConfig } from 'src/types/product.type'
 import AsideFilter from './Components/AsideFilter'
 import Product from './Components/Product'
 import SortProductList from './Components/SortProductList'
-import useQueryParams from 'src/hooks/useQueryParams'
-import productApi from 'src/apis/product.api'
-import Pagination from 'src/components/pagination'
-import { omitBy, isUndefined } from 'lodash'
-import { ProductListConfig } from 'src/types/product.type'
-import CategoryApi from 'src/apis/category.api'
 
-export type QueryConfig = {
-  [key in keyof ProductListConfig]: string
-}
 export default function ProductList() {
-  const queryParams: QueryConfig = useQueryParams()
-
-  const queryConfig: QueryConfig = omitBy(
-    {
-      page: queryParams.page || '1',
-      limit: queryParams.limit || 20,
-      sort_by: queryParams.sort_by,
-      exclude: queryParams.exclude,
-      name: queryParams.name,
-      order: queryParams.order,
-      price_max: queryParams.price_max,
-      price_min: queryParams.price_min,
-      rating_filter: queryParams.rating_filter,
-      category: queryParams.category
-    },
-    isUndefined
-  )
+  const queryConfig = useQueryConfig()
 
   const { data: productData } = useQuery({
     queryKey: ['products', queryConfig],
     queryFn: () => {
       return productApi.getProduct(queryConfig as ProductListConfig)
     },
-    keepPreviousData: true
+    keepPreviousData: true,
+    staleTime: 3 * 60 * 1000
   })
-
   // category
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
     queryFn: () => {
       return CategoryApi.getCategories()
-    }
+    },
+    staleTime: 5 * 60 * 1000
   })
   // console.log(categoriesData?.data.data)
-
   return (
     <div className='bg-gray-200 py-6'>
       <div className='container'>

@@ -24,6 +24,7 @@ export default function useRouteElements() {
   const routeElements = useRoutes([
     {
       path: path.productDetail,
+      index: true,
       element: (
         <MainLayout>
           <ProductDetail />

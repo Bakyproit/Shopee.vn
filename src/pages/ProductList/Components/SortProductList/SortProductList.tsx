@@ -1,17 +1,17 @@
 import { sortBy, order as orderConstant } from 'src/contants/product'
-import { QueryConfig } from '../../ProductList'
 import classNames from 'classnames'
 import { ProductListConfig } from 'src/types/product.type'
 import { Link, createSearchParams, useNavigate } from 'react-router-dom'
 import path from 'src/contants/path'
 import { omit } from 'lodash'
+import { QueryConfig } from 'src/hooks/useQueryConfig'
 
 interface Props {
   queryConfig: QueryConfig
   page_size: number
 }
 
-export default function xSortProductList({ queryConfig, page_size }: Props) {
+export default function SortProductList({ queryConfig, page_size }: Props) {
   const page = Number(queryConfig.page)
   const { sort_by = sortBy.view, order } = queryConfig
   // eslint-disable-next-line react-hooks/rules-of-hooks

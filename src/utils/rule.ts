@@ -42,7 +42,8 @@ export const schema = yup
         message: 'Gía không phù hợp',
         test: testPriceMinMax
       })
-      .required()
+      .required(),
+    name: yup.string().trim().required('Tên sản phẩm là bắt buộc')
   })
   .required()
 

@@ -1,13 +1,34 @@
 import { useContext } from 'react'
-import { useMutation } from 'react-query'
-import { Link } from 'react-router-dom'
+import { useMutation, useQuery } from 'react-query'
+import { Link, createSearchParams, useNavigate } from 'react-router-dom'
 import authApi from 'src/apis/auth.api'
 import path from 'src/contants/path'
 import { AppContext } from 'src/contexts/app.context'
 import Popover from '../Popover'
 import Button from '../Button'
+import useQueryConfig from 'src/hooks/useQueryConfig'
+import { useForm } from 'react-hook-form'
+import { Schema, schema } from 'src/utils/rule'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { omit } from 'lodash'
+import { purchasesStatus } from 'src/contants/purchase'
+import purchaseApi from 'src/apis/purchase.api'
+import { formatCurrency } from 'src/utils/utils'
 
+type FormData = Pick<Schema, 'name'>
+const nameSchema = schema.pick(['name'])
+
+const MAX_PURCHASES = 5
 export default function Header() {
+  const queryConfig = useQueryConfig()
+  const { handleSubmit, register } = useForm<FormData>({
+    defaultValues: {
+      name: ''
+    },
+    resolver: yupResolver(nameSchema)
+  })
+  const navigate = useNavigate()
+
   const { isAuthenticated, setIsAuthenticated, profile, setProfile } = useContext(AppContext)
   const logoutMutation = useMutation({
     mutationFn: authApi.logout,
@@ -16,10 +37,36 @@ export default function Header() {
       setProfile(null)
     }
   })
-
+  //them gio hang
+  const { data: purchasesInCartData } = useQuery({
+    queryKey: ['purchases', { status: purchasesStatus.inCart }],
+    queryFn: () => purchaseApi.getPurchases({ status: purchasesStatus.inCart })
+  })
+  const purchasesInCart = purchasesInCartData?.data.data
+  // console.log(purchasesInCart)
+  //logout
   const handleLogout = () => {
     logoutMutation.mutate()
   }
+  //search
+  const onSubmitSearch = handleSubmit((data) => {
+    const config = queryConfig.order
+      ? omit(
+          {
+            ...queryConfig,
+            name: data.name
+          },
+          ['order', 'sort_by']
+        )
+      : {
+          ...queryConfig,
+          name: data.name
+        }
+    navigate({
+      pathname: path.home,
+      search: createSearchParams(config).toString()
+    })
+  })
 
   return (
     <div className='bg-[linear-gradient(-180deg,#f53d2d,#f63)] pb-5 pt-2 text-white'>
@@ -172,13 +219,13 @@ export default function Header() {
             </svg>
           </Link>
 
-          <form className='col-span-9'>
+          <form className='col-span-9' onSubmit={onSubmitSearch}>
             <div className='bg-white rounded-sm p-1 flex'>
               <input
                 type='text'
-                name='search'
                 className='text-black px-3 py-2 flex-grow border-none outline-none bg-transparent'
                 placeholder='Free Ship Đơn Từ 0Đ'
+                {...register('name')}
               />
               <Button className='rounded-sm py-2 px-6 flex-shrink-0 bg-oranges hover:opacity-80'>
                 <svg
@@ -203,95 +250,55 @@ export default function Header() {
             <Popover
               renderPopover={
                 <div className='relative max-w-[400px]  rounded-sm border-gray-200 bg-white text-sm shadow-md'>
-                  <div className='p-2'>
-                    <div className='capitalize text-gray-400'>Sản phẩm mới thêm</div>
-                    <div className='mt-5'>
-                      <div className='mt-4 flex'>
-                        <div className='flex-shrink-0'>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/24b194a695ea59d384768b7b471d563f_tn'
-                            alt='anh'
-                            className='h-11 w-11 object-cover'
-                          />
-                        </div>
-                        <div className='ml-2 flex-grow overflow-hidden'>
-                          <div className='truncate'>
-                            Day la san pham moi cua noi com dien haah scbkjdhs 37438743
+                  {purchasesInCart ? (
+                    <div className='p-2'>
+                      <div className='capitalize text-gray-400'>Sản phẩm mới thêm</div>
+                      <div className='mt-5'>
+                        {purchasesInCart.slice(0, MAX_PURCHASES).map((purchase) => (
+                          <div className='mt-2 py-2 flex hover:bg-gray-100 ' key={purchase._id}>
+                            <div className='flex-shrink-0'>
+                              <img
+                                src={purchase.product.image}
+                                alt={purchase.product.name}
+                                className='h-11 w-11 object-cover'
+                              />
+                            </div>
+                            <div className='ml-2 flex-grow overflow-hidden'>
+                              <div className='truncate'>{purchase.product.name}</div>
+                            </div>
+                            <div className='ml-2 flex-shrink-0'>
+                              <span className='text-oranges'>
+                                ₫{formatCurrency(purchase.product.price)}
+                              </span>
+                            </div>
                           </div>
+                        ))}
+                      </div>
+                      <div className='mt-6 flex items-center justify-between'>
+                        <div className='text-xs capitalize text-gray-500'>
+                          {purchasesInCart.length > MAX_PURCHASES
+                            ? purchasesInCart.length - MAX_PURCHASES
+                            : ''}{' '}
+                          Thêm hàng vào giở
                         </div>
-                        <div className='ml-2 flex-shrink-0'>
-                          <span className='text-orange'>499.000</span>
-                        </div>
+                        <button className='rounded-sm bg-oranges px-4 py-2 capitalize text-white hover:bg-opacity-80'>
+                          Xem giỏ hàng
+                        </button>
                       </div>
                     </div>
-                    <div className='mt-5'>
-                      <div className='mt-4 flex'>
-                        <div className='flex-shrink-0'>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/24b194a695ea59d384768b7b471d563f_tn'
-                            alt='anh'
-                            className='h-11 w-11 object-cover'
-                          />
-                        </div>
-                        <div className='ml-2 flex-grow overflow-hidden'>
-                          <div className='truncate'>
-                            Day la san pham moi cua noi com dien haah scbkjdhs 37438743
-                          </div>
-                        </div>
-                        <div className='ml-2 flex-shrink-0'>
-                          <span className='text-orange'>499.000</span>
-                        </div>
-                      </div>
+                  ) : (
+                    <div className='p-2 w-[400px] h-[400px] flex justify-center items-center '>
+                      <img
+                        src='https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/9bdd8040b334d31946f49e36beaf32db.png'
+                        alt='no purchase'
+                        className='h-[100px] w-[100px]'
+                      />
                     </div>
-                    <div className='mt-5'>
-                      <div className='mt-4 flex'>
-                        <div className='flex-shrink-0'>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/24b194a695ea59d384768b7b471d563f_tn'
-                            alt='anh'
-                            className='h-11 w-11 object-cover'
-                          />
-                        </div>
-                        <div className='ml-2 flex-grow overflow-hidden'>
-                          <div className='truncate'>
-                            Day la san pham moi cua noi com dien haah scbkjdhs 37438743
-                          </div>
-                        </div>
-                        <div className='ml-2 flex-shrink-0'>
-                          <span className='text-orange'>499.000</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className='mt-5'>
-                      <div className='mt-4 flex'>
-                        <div className='flex-shrink-0'>
-                          <img
-                            src='https://down-vn.img.susercontent.com/file/24b194a695ea59d384768b7b471d563f_tn'
-                            alt='anh'
-                            className='h-11 w-11 object-cover'
-                          />
-                        </div>
-                        <div className='ml-2 flex-grow overflow-hidden'>
-                          <div className='truncate'>
-                            Day la san pham moi cua noi com dien haah scbkjdhs 37438743
-                          </div>
-                        </div>
-                        <div className='ml-2 flex-shrink-0'>
-                          <span className='text-orange'>499.000</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className='mt-6 flex items-center justify-between'>
-                      <div className='text-xs capitalize text-gray-500'>Thêm vào giở hàng</div>
-                      <button className='rounded-sm bg-orange px-4 py-2 capitalize text-white hover:bg-opacity-80'>
-                        Xem giỏ hàng
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
               }
             >
-              <Link to='/' className=''>
+              <Link to='/' className='relative'>
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
                   fill='none'
@@ -306,6 +313,9 @@ export default function Header() {
                     d='M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z'
                   />
                 </svg>
+                <span className='absolute top-[-5px] left-[17px] rounded-full px-[9px] py-[1px] bg-white text-xs text-oranges'>
+                  {purchasesInCart?.length}
+                </span>
               </Link>
             </Popover>
           </div>
