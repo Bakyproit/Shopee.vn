@@ -27,7 +27,7 @@ export default function ProductList() {
     },
     staleTime: 5 * 60 * 1000
   })
-  // console.log(categoriesData?.data.data)
+
   return (
     <div className='bg-gray-200 py-6'>
       <div className='container'>

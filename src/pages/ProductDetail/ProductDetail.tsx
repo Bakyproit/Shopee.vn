@@ -1,7 +1,7 @@
 import DOMPurify from 'dompurify'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import productApi from 'src/apis/product.api'
 import ProductRating from 'src/components/ProductRating'
 import QuantityController from 'src/components/QuantityController'
@@ -16,6 +16,8 @@ import {
 import Product from '../ProductList/Components/Product'
 import purchaseApi from 'src/apis/purchase.api'
 import { purchasesStatus } from 'src/contants/purchase'
+import { AppContext } from 'src/contexts/app.context'
+import path from 'src/contants/path'
 
 type DataBody = {
   product_id: string
@@ -23,10 +25,12 @@ type DataBody = {
 }
 
 export default function ProductDetail() {
+  const { isAuthenticated } = useContext(AppContext)
   const queryClient = useQueryClient()
   const [buyCount, setBuyCount] = useState(1)
   const { nameId } = useParams()
   const id = getIdFromNameId(nameId as string)
+
   //goi api productDetail
   const { data: productDetailData } = useQuery({
     queryKey: ['product', id],
@@ -48,12 +52,36 @@ export default function ProductDetail() {
     enabled: Boolean(product),
     staleTime: 3 * 60 * 1000
   })
-  // console.log(productData?.data.data.products)
   //Add to cart
   const addToCartMutation = useMutation({
     mutationFn: (body: DataBody) => purchaseApi.addToCart(body)
   })
+  //add sản phẩm
+  const addToCart = () => {
+    addToCartMutation.mutate(
+      { buy_count: buyCount, product_id: product?._id as string },
+      {
+        onSuccess: (data) => {
+          toast.success(data.data.message, {
+            position: 'top-right',
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'light'
+          })
+          //goi đến query
+          queryClient.invalidateQueries({
+            queryKey: ['purchases', { status: purchasesStatus.inCart }]
+          })
+        }
+      }
+    )
+  }
 
+  //anh
   const [currentIndexImages, setCurrentIndexImages] = useState([0, 5])
   const [activeImage, setActiveImage] = useState('')
   const currentImages = useMemo(
@@ -71,6 +99,7 @@ export default function ProductDetail() {
   const chooseActive = (img: string) => {
     setActiveImage(img)
   }
+  //click chuyển ảnh
   const next = () => {
     if (currentIndexImages[1] < (product as ProductType).images.length) {
       setCurrentIndexImages((prev) => [prev[0] + 1, prev[1] + 1])
@@ -81,6 +110,7 @@ export default function ProductDetail() {
       setCurrentIndexImages((prev) => [prev[0] - 1, prev[1] - 1])
     }
   }
+  // zoom hình ảnh
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleZoom = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -97,34 +127,13 @@ export default function ProductDetail() {
     image.style.top = top + 'px'
     image.style.left = left + 'px'
   }
+  //clear zoom ảnh
   const handleRemoveZoom = () => {
     imageRef.current?.removeAttribute('style')
   }
 
   const handleBuyCount = (value: number) => {
     setBuyCount(value)
-  }
-  const addToCart = () => {
-    addToCartMutation.mutate(
-      { buy_count: buyCount, product_id: product?._id as string },
-      {
-        onSuccess: (data) => {
-          toast.success(data.data.message, {
-            position: 'top-right',
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: 'light'
-          })
-          queryClient.invalidateQueries({
-            queryKey: ['purchases', { status: purchasesStatus.inCart }]
-          })
-        }
-      }
-    )
   }
   if (!product) return null
   // console.log(product)
@@ -256,54 +265,113 @@ export default function ProductDetail() {
               {/* Số lượng */}
               {/* Thêm giỏ hàng */}
               <div className='mt-4 flex items-center'>
-                <button
-                  className='flex h-12 items-center justify-center rounded-sm border border-oranges bg-orange/10 px-5 capitalize text-oranges shadow-sm hover:bg-oranges/5'
-                  onClick={addToCart}
-                >
-                  <svg
-                    enableBackground='new 0 0 15 15'
-                    viewBox='0 0 15 15'
-                    x={0}
-                    y={0}
-                    className='mr-[10px] h-5 w-5 fill-current stroke-oranges text-oranges'
-                  >
-                    <g>
-                      <g>
-                        <polyline
-                          fill='none'
-                          points='.5 .5 2.7 .5 5.2 11 12.4 11 14.5 3.5 3.7 3.5'
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeMiterlimit={10}
-                        />
-                        <circle cx={6} cy='13.5' r={1} stroke='none' />
-                        <circle cx='11.5' cy='13.5' r={1} stroke='none' />
-                      </g>
-                      <line
-                        fill='none'
-                        strokeLinecap='round'
-                        strokeMiterlimit={10}
-                        x1='7.5'
-                        x2='10.5'
-                        y1={7}
-                        y2={7}
-                      />
-                      <line
-                        fill='none'
-                        strokeLinecap='round'
-                        strokeMiterlimit={10}
-                        x1={9}
-                        x2={9}
-                        y1='8.5'
-                        y2='5.5'
-                      />
-                    </g>
-                  </svg>
-                  Thêm vào giở hàng
-                </button>
-                <button className='ml-4 h-12 min-w-[5rem] items-center justify-center rounded-sm px-5 bg-oranges capitalize text-white shadow-sm outline-none hover:bg-oranges/90'>
-                  Mua ngay
-                </button>
+                {isAuthenticated && (
+                  <div className='flex items-center'>
+                    <button
+                      className='flex h-12 items-center justify-center rounded-sm border border-oranges bg-orange/10 px-5 capitalize text-oranges shadow-sm hover:bg-oranges/5'
+                      onClick={addToCart}
+                    >
+                      <svg
+                        enableBackground='new 0 0 15 15'
+                        viewBox='0 0 15 15'
+                        x={0}
+                        y={0}
+                        className='mr-[10px] h-5 w-5 fill-current stroke-oranges text-oranges'
+                      >
+                        <g>
+                          <g>
+                            <polyline
+                              fill='none'
+                              points='.5 .5 2.7 .5 5.2 11 12.4 11 14.5 3.5 3.7 3.5'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeMiterlimit={10}
+                            />
+                            <circle cx={6} cy='13.5' r={1} stroke='none' />
+                            <circle cx='11.5' cy='13.5' r={1} stroke='none' />
+                          </g>
+                          <line
+                            fill='none'
+                            strokeLinecap='round'
+                            strokeMiterlimit={10}
+                            x1='7.5'
+                            x2='10.5'
+                            y1={7}
+                            y2={7}
+                          />
+                          <line
+                            fill='none'
+                            strokeLinecap='round'
+                            strokeMiterlimit={10}
+                            x1={9}
+                            x2={9}
+                            y1='8.5'
+                            y2='5.5'
+                          />
+                        </g>
+                      </svg>
+                      Thêm vào giở hàng
+                    </button>
+                    <button className='ml-4 h-12 min-w-[5rem] items-center justify-center rounded-sm px-5 bg-oranges capitalize text-white shadow-sm outline-none hover:bg-oranges/90'>
+                      Mua ngay
+                    </button>
+                  </div>
+                )}
+                {!isAuthenticated && (
+                  <div className='flex items-center'>
+                    <Link
+                      className='flex h-12 items-center justify-center rounded-sm border border-oranges bg-orange/10 px-5 capitalize text-oranges shadow-sm hover:bg-oranges/5'
+                      to={path.login}
+                    >
+                      <svg
+                        enableBackground='new 0 0 15 15'
+                        viewBox='0 0 15 15'
+                        x={0}
+                        y={0}
+                        className='mr-[10px] h-5 w-5 fill-current stroke-oranges text-oranges'
+                      >
+                        <g>
+                          <g>
+                            <polyline
+                              fill='none'
+                              points='.5 .5 2.7 .5 5.2 11 12.4 11 14.5 3.5 3.7 3.5'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeMiterlimit={10}
+                            />
+                            <circle cx={6} cy='13.5' r={1} stroke='none' />
+                            <circle cx='11.5' cy='13.5' r={1} stroke='none' />
+                          </g>
+                          <line
+                            fill='none'
+                            strokeLinecap='round'
+                            strokeMiterlimit={10}
+                            x1='7.5'
+                            x2='10.5'
+                            y1={7}
+                            y2={7}
+                          />
+                          <line
+                            fill='none'
+                            strokeLinecap='round'
+                            strokeMiterlimit={10}
+                            x1={9}
+                            x2={9}
+                            y1='8.5'
+                            y2='5.5'
+                          />
+                        </g>
+                      </svg>
+                      Thêm vào giở hàng
+                    </Link>
+                    <Link
+                      to={path.login}
+                      className='ml-4 h-12 min-w-[5rem] flex items-center justify-center rounded-sm px-5 bg-oranges capitalize text-white shadow-sm outline-none hover:bg-oranges/90'
+                    >
+                      Mua ngay
+                    </Link>
+                  </div>
+                )}
               </div>
               {/* Thêm giở hàng */}
             </div>
@@ -333,6 +401,7 @@ export default function ProductDetail() {
         </div>
       </div>
       {/* chi tiết sản phẩm */}
+      {/* Có thể bạn cũng thích */}
       <div className='mt-8'>
         <div className='container'>
           <div className='uppercase text-gray-400'>Có thể bạn cũng thích</div>
@@ -347,6 +416,7 @@ export default function ProductDetail() {
           )}
         </div>
       </div>
+      {/* Có thể bạn cũng thích */}
     </div>
   )
 }

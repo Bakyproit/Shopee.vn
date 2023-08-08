@@ -140,12 +140,12 @@ export default function AsideFilter({ categories, queryConfig }: Props) {
                     className='grow'
                     placeholder='₫ Từ'
                     classNameError='hidden'
+                    classNameInput='h-8 px-2 w-full outline-none border text-xs border-gray-300 rounded-sm focus:border-gray-500 focus:shadow-sm'
                     {...field}
                     onChange={(event) => {
                       field.onChange(event)
                       trigger('price_max')
                     }}
-                    classNameInput='h-8 px-2 w-full outline-none border text-xs border-gray-300 rounded-sm focus:border-gray-500 focus:shadow-sm'
                   />
                 )
               }}
@@ -161,12 +161,12 @@ export default function AsideFilter({ categories, queryConfig }: Props) {
                     className='grow'
                     placeholder='₫ Đến'
                     classNameError='hidden'
+                    classNameInput='h-8 px-2 w-full outline-none border text-xs border-gray-300 rounded-sm focus:border-gray-500 focus:shadow-sm'
                     {...field}
                     onChange={(event) => {
                       field.onChange(event)
                       trigger('price_min')
                     }}
-                    classNameInput='h-8 px-2 w-full outline-none border text-xs border-gray-300 rounded-sm focus:border-gray-500 focus:shadow-sm'
                   />
                 )
               }}
