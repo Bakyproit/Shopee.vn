@@ -1,7 +1,7 @@
 import DOMPurify from 'dompurify'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from 'react-query'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import productApi from 'src/apis/product.api'
 import ProductRating from 'src/components/ProductRating'
 import QuantityController from 'src/components/QuantityController'
@@ -27,6 +27,7 @@ type DataBody = {
 export default function ProductDetail() {
   const { isAuthenticated } = useContext(AppContext)
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [buyCount, setBuyCount] = useState(1)
   const { nameId } = useParams()
   const id = getIdFromNameId(nameId as string)
@@ -37,6 +38,7 @@ export default function ProductDetail() {
     queryFn: () => productApi.getProductDetail(id as string)
   })
   const product = productDetailData?.data.data
+  console.log(product)
 
   const queryConfig: ProductListConfig = {
     limit: '20',
@@ -131,10 +133,24 @@ export default function ProductDetail() {
   const handleRemoveZoom = () => {
     imageRef.current?.removeAttribute('style')
   }
-
+  //handle buycount
   const handleBuyCount = (value: number) => {
     setBuyCount(value)
   }
+  //navigate state
+  const buyNow = async () => {
+    const res = await addToCartMutation.mutateAsync({
+      buy_count: buyCount,
+      product_id: product?._id as string
+    })
+    const purchase = res.data.data
+    navigate(path.cart, {
+      state: {
+        purchaseId: purchase._id
+      }
+    })
+  }
+
   if (!product) return null
   // console.log(product)
   return (
@@ -312,7 +328,10 @@ export default function ProductDetail() {
                       </svg>
                       Thêm vào giở hàng
                     </button>
-                    <button className='ml-4 h-12 min-w-[5rem] items-center justify-center rounded-sm px-5 bg-oranges capitalize text-white shadow-sm outline-none hover:bg-oranges/90'>
+                    <button
+                      onClick={buyNow}
+                      className='ml-4 h-12 min-w-[5rem] items-center justify-center rounded-sm px-5 bg-oranges capitalize text-white shadow-sm outline-none hover:bg-oranges/90'
+                    >
                       Mua ngay
                     </button>
                   </div>
@@ -406,8 +425,8 @@ export default function ProductDetail() {
         <div className='container'>
           <div className='uppercase text-gray-400'>Có thể bạn cũng thích</div>
           {productData && (
-            <div className='mt-6 grid grid-cols-3 gap-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6'>
-              {productData.data.data.products.map((product) => (
+            <div className='mt-6 grid grid-cols-3 gap-3 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-8'>
+              {productData.data.data.products.slice(0, 8).map((product) => (
                 <div className='col-span-1' key={product._id}>
                   <Product product={product} />
                 </div>

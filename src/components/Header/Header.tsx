@@ -5,7 +5,7 @@ import purchaseApi from 'src/apis/purchase.api'
 import path from 'src/contants/path'
 import { purchasesStatus } from 'src/contants/purchase'
 import { AppContext } from 'src/contexts/app.context'
-import { formatCurrency } from 'src/utils/utils'
+import { formatCurrency, generateNameId } from 'src/utils/utils'
 import Button from '../Button'
 import NavHeader from '../NavHeader'
 import Popover from '../Popover'
@@ -77,7 +77,14 @@ export default function Header() {
                       <div className='capitalize text-gray-400'>Sản phẩm mới thêm</div>
                       <div className='mt-5'>
                         {purchasesInCart.slice(0, MAX_PURCHASES).map((purchase) => (
-                          <div className='mt-2 py-2 flex hover:bg-gray-100 ' key={purchase._id}>
+                          <Link
+                            to={`${path.home}${generateNameId({
+                              name: purchase.product.name,
+                              id: purchase.product._id
+                            })}`}
+                            className='mt-2 py-2 flex hover:bg-gray-100 '
+                            key={purchase._id}
+                          >
                             <div className='flex-shrink-0'>
                               <img
                                 src={purchase.product.image}
@@ -93,7 +100,7 @@ export default function Header() {
                                 ₫{formatCurrency(purchase.product.price)}
                               </span>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                       <div className='mt-6 flex items-center justify-between'>
